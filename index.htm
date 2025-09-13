@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedagogy Live Session 4 & 5 Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+        }
+        .correct {
+            background-color: #d1fae5;
+            border: 2px solid #34d399;
+        }
+        .incorrect {
+            background-color: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        .question-number-circle {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            min-height: 30px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            color: #4b5563;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+        }
+        .selected-option {
+            background-color: #dbeafe;
+        }
+        .correct-answer-icon {
+            color: #10b981;
+        }
+        .incorrect-answer-icon {
+            color: #ef4444;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #results-container, #results-container * {
+                visibility: visible;
+            }
+            #results-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                margin-top: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Name Entry Container -->
+    <div id="name-entry-container" class="bg-white p-8 rounded-3xl shadow-2xl max-w-lg w-full transform transition-all duration-500">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Pedagogy Live Session 4 & 5</h2>
+        <h3 class="text-xl font-medium text-center text-gray-600 mb-6">Quiz on Teaching Methods</h3>
+        <div class="mb-4">
+            <label for="userName" class="block text-gray-700 font-semibold mb-2">Enter Your Full Name:</label>
+            <input type="text" id="userName" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Imran Ustad">
+        </div>
+        <button id="startQuizBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Wrapper -->
+    <div id="quiz-content-wrapper" class="hidden bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-3xl w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+            <h2 class="text-2xl font-bold text-gray-800 text-center md:text-left mb-2 md:mb-0">Quiz on Teaching Methods</h2>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-600 font-medium">Time Left:</span>
+                <span id="timer" class="text-red-500 font-bold text-xl"></span>
+            </div>
+        </div>
+        
+        <!-- Question Display Area -->
+        <div id="question-container" class="transition-opacity duration-300 ease-in-out">
+            <!-- Questions will be rendered here -->
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-6 pt-4 border-t">
+            <button id="prevBtn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-xl hover:bg-gray-400 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+            <button id="nextBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-blue-700 transition-colors duration-300">Next</button>
+        </div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="results-container" class="hidden bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-4xl w-full mt-8">
+        <div id="result-card" class="p-6 md:p-8 rounded-xl border border-gray-200">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Quiz Results</h2>
+            <div class="text-center mb-6">
+                <span class="block text-xl font-semibold text-gray-600">Student: <span id="student-name" class="text-blue-600"></span></span>
+                <span class="block text-xl font-semibold text-gray-600">Score: <span id="score-display" class="text-green-600"></span> / 60</span>
+            </div>
+            
+            <div id="review-container" class="space-y-4">
+                <!-- Detailed results will be rendered here -->
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6 no-print">
+            <button id="downloadBtn" class="w-full sm:w-auto bg-green-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-600 transition-colors duration-300 transform hover:scale-105">Download Result Card</button>
+            <button id="printBtn" class="w-full sm:w-auto bg-yellow-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-yellow-600 transition-colors duration-300 transform hover:scale-105">Print Results</button>
+            <button id="retakeBtn" class="w-full sm:w-auto bg-purple-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-purple-600 transition-colors duration-300 transform hover:scale-105">Retake Quiz</button>
+        </div>
+    </div>
+    
+    <!-- Modal for validation messages -->
+    <div id="modal-container" class="hidden modal-overlay">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Please Enter Your Name</h3>
+            <p class="text-gray-600 mb-4">You must provide your name to start the quiz.</p>
+            <button id="closeModalBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-blue-700">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const allQuestions = [
+            // --- Lecture Method (6 Questions) ---
+            { question: "Which teaching method is primarily teacher-centered and focuses on a one-way flow of information?", options: ["Discussion Method", "Demonstration Method", "Lecture Method", "Project-Based Method"], answerIndex: 2 },
+            { question: "A major disadvantage of the lecture method is that it can lead to:", options: ["Active student participation", "Lack of student engagement and passivity", "Development of critical thinking skills", "Enhanced collaboration among peers"], answerIndex: 1 },
+            { question: "When is the lecture method most appropriate?", options: ["When teaching complex motor skills", "When introducing a new topic to a large audience", "For promoting in-depth critical discussion", "When students need to work independently"], answerIndex: 1 },
+            { question: "The lecture method is considered effective for:", options: ["Fostering creativity", "Covering a large amount of content in a short time", "Developing problem-solving skills", "Encouraging student autonomy"], answerIndex: 1 },
+            { question: "In the lecture method, the teacher's role is primarily that of a:", options: ["Facilitator", "Mentor", "Information provider", "Collaborator"], answerIndex: 2 },
+            { question: "Which of the following is NOT a feature of an effective lecture?", options: ["Clear structure and organization", "Use of visual aids", "Minimal student interaction", "Connecting new information to prior knowledge"], answerIndex: 2 },
+
+            // --- Discussion Method (6 Questions) ---
+            { question: "What is the primary goal of the discussion method?", options: ["To transfer factual knowledge efficiently", "To encourage students to share ideas and perspectives", "To train students in a specific skill", "To solve a complex problem without teacher guidance"], answerIndex: 1 },
+            { question: "The discussion method is most effective for teaching what?", options: ["Memorizing historical dates", "Developing communication and critical thinking skills", "Learning scientific formulas", "Mastering a physical technique"], answerIndex: 1 },
+            { question: "What is the teacher's role in a classroom discussion?", options: ["To dominate the conversation", "To provide all the correct answers", "To facilitate and guide the exchange of ideas", "To remain silent and observe"], answerIndex: 2 },
+            { question: "A disadvantage of the discussion method is that it can be difficult to:", options: ["Gauge student understanding", "Ensure all students participate equally", "Cover required syllabus content", "Generate new ideas"], answerIndex: 1 },
+            { question: "Which type of discussion involves small groups working on a specific task and then reporting back to the larger class?", options: ["Whole-class debate", "Brainstorming session", "Jigsaw technique", "Socratic seminar"], answerIndex: 2 },
+            { question: "The discussion method is excellent for promoting a sense of:", options: ["Competition", "Passive learning", "Community and collaboration", "Individual isolation"], answerIndex: 2 },
+
+            // --- Demonstration Method (6 Questions) ---
+            { question: "The demonstration method is best suited for teaching which of the following?", options: ["Abstract philosophical concepts", "A new procedure or skill", "Historical events and their timelines", "Theories of economic growth"], answerIndex: 1 },
+            { question: "A key advantage of the demonstration method is that it appeals to which type of learner?", options: ["Auditory learners", "Kinesthetic learners", "Visual learners", "Reading/writing learners"], answerIndex: 2 },
+            { question: "What should the teacher do immediately after a demonstration?", options: ["Move on to the next topic", "Allow students to practice the skill themselves", "Give a long lecture on the theory", "Ask students to write an essay about it"], answerIndex: 1 },
+            { question: "The demonstration method is considered a form of what kind of instruction?", options: ["Student-centered", "Passive", "Interactive", "Teacher-led"], answerIndex: 3 },
+            { question: "Which of the following is a potential drawback of the demonstration method?", options: ["It requires minimal preparation", "Students may not be able to replicate the skill", "It is always more engaging than a lecture", "It guarantees all students will understand"], answerIndex: 1 },
+            { question: "In the demonstration method, what is the role of the students?", options: ["Active participants in the process", "Silent observers", "Collaborators with the teacher", "Independent learners"], answerIndex: 1 },
+
+            // --- Project-Based Method (6 Questions) ---
+            { question: "What is the central feature of Project-Based Learning (PBL)?", options: ["Completing a series of worksheets", "Memorizing facts and dates", "Engaging in a long-term, complex project", "Listening to a teacher's explanation"], answerIndex: 2 },
+            { question: "PBL is most effective for developing which skills?", options: ["Rote memorization", "Critical thinking and collaboration", "Listening and note-taking", "Following simple, single-step instructions"], answerIndex: 1 },
+            { question: "Which of the following is an example of a good PBL topic?", options: ["Listing the planets of the solar system", "Creating a business plan for a new local cafe", "Copying a passage from a textbook", "Completing a multiple-choice test"], answerIndex: 1 },
+            { question: "A key benefit of PBL is that it allows students to:", options: ["Learn independently without any teacher guidance", "Apply classroom knowledge to real-world contexts", "Compete with each other for a prize", "Finish the syllabus quickly"], answerIndex: 1 },
+            { question: "In a PBL classroom, the teacher acts as a:", options: ["Dictator", "Information gatekeeper", "Facilitator and guide", "Passive observer"], answerIndex: 2 },
+            { question: "What is a common challenge of implementing PBL?", options: ["It is too easy for students", "It takes a significant amount of time", "It discourages creativity", "It works only for a single subject"], answerIndex: 1 },
+
+            // --- Inquiry-Based Method (6 Questions) ---
+            { question: "The inquiry-based method begins with a:", options: ["Teacher-provided answer", "Student-generated question or problem", "Textbook chapter", "Rote memorization task"], answerIndex: 1 },
+            { question: "What is the primary role of the student in inquiry-based learning?", options: ["To passively receive information", "To find answers to their own questions", "To follow instructions exactly as given", "To listen to the teacher's lecture"], answerIndex: 1 },
+            { question: "Inquiry-based learning is strongly associated with which of the following?", options: ["Teaching science and research skills", "Drilling multiplication tables", "Reading and summarizing texts", "Practicing grammar rules"], answerIndex: 0 },
+            { question: "What is a major benefit of the inquiry-based method?", options: ["It provides a quick, easy way to learn facts", "It promotes deep understanding and lifelong learning", "It reduces the need for student effort", "It guarantees the correct answer is found quickly"], answerIndex: 1 },
+            { question: "Which of the following is a characteristic of inquiry-based teaching?", options: ["Teacher gives explicit instructions for every step", "The teacher provides a detailed answer key", "Students are encouraged to explore and investigate", "Learning is linear and predictable"], answerIndex: 2 },
+            { question: "The final step in the inquiry-based method is typically:", options: ["Asking another question", "Presenting and sharing findings", "Returning to the initial question", "Starting over from the beginning"], answerIndex: 1 },
+
+            // --- Cooperative Learning Method (6 Questions) ---
+            { question: "What is the core principle of cooperative learning?", options: ["Students compete to be the best", "Students work together to achieve a common goal", "Students work individually on separate tasks", "The teacher provides all the information"], answerIndex: 1 },
+            { question: "Which of the following is NOT an essential element of cooperative learning?", options: ["Positive interdependence", "Individual accountability", "Homogeneous grouping", "Promotive interaction"], answerIndex: 2 },
+            { question: "Cooperative learning is highly effective for developing:", options: ["Rivalry among peers", "Social and communication skills", "A silent, quiet classroom", "Total dependence on the teacher"], answerIndex: 1 },
+            { question: "What is 'individual accountability' in cooperative learning?", options: ["Only one student is responsible for the final product", "Each student is assessed on their personal contribution", "The group gets a single grade regardless of individual effort", "The teacher is responsible for the group's success"], answerIndex: 1 },
+            { question: "Which of these is an example of a cooperative learning activity?", options: ["A student taking a multiple-choice test alone", "A whole-class lecture", "Students working in small groups on a shared project", "A teacher demonstrating a science experiment"], answerIndex: 2 },
+            { question: "What is the teacher's role in a cooperative learning environment?", options: ["To be a facilitator and monitor group work", "To give a continuous lecture", "To sit at their desk and grade papers", "To be a team member"], answerIndex: 0 },
+            
+            // --- Problem-Solving Method (6 Questions) ---
+            { question: "The problem-solving method begins with:", options: ["Defining the problem", "Identifying a solution", "Gathering facts", "Evaluating outcomes"], answerIndex: 0 },
+            { question: "What is a key benefit of the problem-solving method?", options: ["It provides a single correct answer", "It fosters critical thinking and analytical skills", "It is only useful for simple math problems", "It works best when students have no prior knowledge"], answerIndex: 1 },
+            { question: "In the problem-solving method, the student is expected to:", options: ["Wait for the teacher to provide the solution", "Work through a series of steps to find a solution", "Memorize the problem statement", "Ignore the problem and move on to the next topic"], answerIndex: 1 },
+            { question: "What role does the teacher play in the problem-solving method?", options: ["Provides a clear, step-by-step solution", "Acts as a guide who helps students navigate the process", "Assigns the same problem to everyone", "Takes over the problem-solving process"], answerIndex: 1 },
+            { question: "The problem-solving method is most effective when the problems are:", options: ["Vague and ill-defined", "Well-defined and relevant to the students' lives", "Purely theoretical and abstract", "Too easy to solve"], answerIndex: 1 },
+            { question: "Which of the following is NOT a step in the problem-solving process?", options: ["Defining the problem", "Analyzing the problem", "Ignoring the problem", "Evaluating the solution"], answerIndex: 2 },
+            
+            // --- Role Play / Simulation Method (6 Questions) ---
+            { question: "What is a primary goal of the role-play method?", options: ["To transfer factual knowledge", "To act out a historical event for memorization", "To promote empathy and understanding of different perspectives", "To test a student's acting ability"], answerIndex: 2 },
+            { question: "A simulation method is most effective for teaching which of the following?", options: ["The alphabet", "Complex systems or real-world scenarios in a safe environment", "Basic arithmetic", "Spelling words"], answerIndex: 1 },
+            { question: "Which of the following is a benefit of using simulations in the classroom?", options: ["It is a very passive way to learn", "It allows students to practice skills without real-world consequences", "It requires no teacher supervision", "It is an inexpensive and simple method"], answerIndex: 1 },
+            { question: "In a role-play activity, the teacher's role is to:", options: ["Give students a script to follow verbatim", "Assign roles and provide guidance", "Take on a role and dominate the activity", "Sit and observe without any interaction"], answerIndex: 1 },
+            { question: "The role-play method is particularly useful for teaching which subject?", options: ["Mathematics", "Physics", "Social sciences and language arts", "Physical education"], answerIndex: 2 },
+            { question: "A major difference between a role-play and a simulation is that:", options: ["Simulations are always competitive", "Simulations are more focused on system dynamics and cause-and-effect relationships", "Role-plays are always silent", "Simulations do not require students to talk"], answerIndex: 1 },
+            
+            // --- Brainstorming Method (6 Questions) ---
+            { question: "What is the main goal of the brainstorming method?", options: ["To critique and judge every idea", "To generate as many ideas as possible without judgment", "To find the single best solution immediately", "To prove one person is smarter than the rest"], answerIndex: 1 },
+            { question: "Which rule is central to a successful brainstorming session?", options: ["Judge every idea as it is presented", "Encourage and welcome all ideas, no matter how wild", "Limit the number of ideas to five", "Only allow one person to speak at a time"], answerIndex: 1 },
+            { question: "Brainstorming is an excellent method for promoting:", options: ["Conformity and uniformity of thought", "Divergent thinking and creativity", "Linear and sequential problem-solving", "Rote memorization"], answerIndex: 1 },
+            { question: "Which of the following is a common limitation of the brainstorming method?", options: ["It is too quiet and peaceful", "It can be dominated by a few vocal individuals", "It is guaranteed to produce a perfect solution", "It is only effective with a single person"], answerIndex: 1 },
+            { question: "In a brainstorming session, 'piggybacking' on others' ideas means:", options: ["Stealing an idea and claiming it as your own", "Building upon and combining the ideas of others", "Ignoring previous ideas completely", "Critiquing an idea as soon as it's shared"], answerIndex: 1 },
+            { question: "The role of the facilitator in a brainstorming session is to:", options: ["Provide the answers", "Write down all the ideas and keep the group focused", "Only allow certain types of ideas", "Criticize bad ideas"], answerIndex: 1 },
+
+            // --- Activity-Based Method (6 Questions) ---
+            { question: "The core principle of the activity-based method is that learning is most effective when it is:", options: ["Passive and silent", "Based on direct instruction", "Experiential and hands-on", "Focused on reading textbooks"], answerIndex: 2 },
+            { question: "Which of the following is a characteristic of activity-based learning?", options: ["Students are primarily listeners", "It encourages learning by doing", "The teacher does most of the work", "Learning is a solitary process"], answerIndex: 1 },
+            { question: "A hands-on science experiment is an excellent example of which teaching method?", options: ["Lecture method", "Demonstration method", "Activity-based method", "Discussion method"], answerIndex: 2 },
+            { question: "What is a major advantage of the activity-based method?", options: ["It is the fastest way to cover content", "It helps students develop real-world skills and problem-solving abilities", "It requires no teacher involvement", "It is only useful for young children"], answerIndex: 1 },
+            { question: "The activity-based method works best when activities are:", options: ["Unrelated to the learning objective", "Boring and repetitive", "Designed to be meaningful and relevant to the topic", "Teacher-led and highly structured"], answerIndex: 2 },
+            { question: "Which of the following is an example of an activity-based learning task?", options: ["Reciting a poem from memory", "Taking a timed, written test", "Building a model of a volcano", "Reading a long passage from a history book"], answerIndex: 2 },
+        ];
+        
+        const nameEntryContainer = document.getElementById('name-entry-container');
+        const quizContentWrapper = document.getElementById('quiz-content-wrapper');
+        const resultsContainer = document.getElementById('results-container');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+        const userNameInput = document.getElementById('userName');
+        const studentNameSpan = document.getElementById('student-name');
+        const scoreDisplaySpan = document.getElementById('score-display');
+        const questionContainer = document.getElementById('question-container');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const printBtn = document.getElementById('printBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const timerSpan = document.getElementById('timer');
+        const modalContainer = document.getElementById('modal-container');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const reviewContainer = document.getElementById('review-container');
+
+        let userAnswers = [];
+        let currentQuestionIndex = 0;
+        let timerSeconds = 3600; // 60 minutes
+        let timerInterval;
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    const minutes = Math.floor(timerSeconds / 60);
+                    const seconds = timerSeconds % 60;
+                    timerSpan.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                } else {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function showModal(message) {
+            const modalMessage = modalContainer.querySelector('p');
+            modalMessage.textContent = message;
+            modalContainer.classList.remove('hidden');
+        }
+
+        function renderQuestion() {
+            const question = allQuestions[currentQuestionIndex];
+            const currentAnswer = userAnswers[currentQuestionIndex];
+            
+            let optionsHtml = question.options.map((option, index) => `
+                <label class="block p-4 mb-3 rounded-xl border border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors duration-200 ${currentAnswer === index ? 'selected-option' : ''}">
+                    <input type="radio" name="question-${currentQuestionIndex}" value="${index}" class="mr-3" ${currentAnswer === index ? 'checked' : ''}>
+                    ${option}
+                </label>
+            `).join('');
+
+            questionContainer.innerHTML = `
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="question-number-circle">${currentQuestionIndex + 1}</div>
+                    <p class="text-lg font-medium text-gray-700">${question.question}</p>
+                </div>
+                <div class="space-y-3">
+                    ${optionsHtml}
+                </div>
+            `;
+            
+            const radioButtons = questionContainer.querySelectorAll(`input[name="question-${currentQuestionIndex}"]`);
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    userAnswers[currentQuestionIndex] = parseInt(e.target.value);
+                    questionContainer.querySelectorAll('label').forEach(label => {
+                        label.classList.remove('selected-option');
+                    });
+                    e.target.closest('label').classList.add('selected-option');
+                });
+            });
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.textContent = currentQuestionIndex === allQuestions.length - 1 ? 'Submit Quiz' : 'Next';
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < allQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                submitQuiz();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function calculateScore() {
+            let score = 0;
+            for (let i = 0; i < allQuestions.length; i++) {
+                if (userAnswers[i] === allQuestions[i].answerIndex) {
+                    score++;
+                }
+            }
+            return score;
+        }
+
+        function renderFullResults() {
+            reviewContainer.innerHTML = '';
+            allQuestions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === question.answerIndex;
+                const userChoiceText = userAnswer !== undefined ? question.options[userAnswer] : 'Not Answered';
+                const correctAnswerText = question.options[question.answerIndex];
+                
+                const questionReviewHtml = `
+                    <div class="p-4 rounded-xl shadow-sm ${isCorrect ? 'correct' : 'incorrect'}">
+                        <div class="flex items-start">
+                            <span class="font-bold text-lg mr-2">${index + 1}.</span>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">${question.question}</p>
+                                <ul class="mt-2 text-sm text-gray-600">
+                                    <li class="${isCorrect ? 'text-green-700 font-semibold' : 'text-red-700 font-semibold'} flex items-center">
+                                        <span class="font-bold mr-2">${isCorrect ? 'Your Answer (Correct):' : 'Your Answer (Incorrect):'}</span>
+                                        ${userChoiceText}
+                                        <span class="ml-2">${isCorrect ? '✅' : '❌'}</span>
+                                    </li>
+                                    ${!isCorrect ? `<li class="text-green-700 mt-1 flex items-center"><span class="font-bold mr-2">Correct Answer:</span> ${correctAnswerText} ✅</li>` : ''}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewContainer.innerHTML += questionReviewHtml;
+            });
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            const finalScore = calculateScore();
+            quizContentWrapper.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            studentNameSpan.textContent = userNameInput.value;
+            scoreDisplaySpan.textContent = finalScore;
+            renderFullResults();
+        }
+
+        startQuizBtn.addEventListener('click', () => {
+            if (userNameInput.value.trim() === '') {
+                showModal('Please enter your full name to start the quiz.');
+            } else {
+                nameEntryContainer.classList.add('hidden');
+                quizContentWrapper.classList.remove('hidden');
+                userAnswers = new Array(allQuestions.length).fill(undefined);
+                currentQuestionIndex = 0;
+                renderQuestion();
+                startTimer();
+            }
+        });
+        
+        closeModalBtn.addEventListener('click', () => {
+            modalContainer.classList.add('hidden');
+        });
+        
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', previousQuestion);
+
+        downloadBtn.addEventListener('click', () => {
+            const resultCard = document.getElementById('result-card');
+            html2canvas(resultCard, {
+                scale: 2,
+                logging: true,
+                useCORS: true,
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Quiz-Result-${userNameInput.value.replace(/ /g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(error => {
+                console.error("Error generating image:", error);
+            });
+        });
+
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        retakeBtn.addEventListener('click', () => {
+            resultsContainer.classList.add('hidden');
+            nameEntryContainer.classList.remove('hidden');
+            userNameInput.value = '';
+            userAnswers = [];
+            currentQuestionIndex = 0;
+            timerSeconds = 3600;
+        });
+
+    </script>
+</body>
+</html>
